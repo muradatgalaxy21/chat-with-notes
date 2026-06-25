@@ -23,7 +23,7 @@ from ingest import get_collection
 load_dotenv()
 
 # Current, fast, free-tier Groq model. Swap if Groq retires it.
-LLM_MODEL = "llama-3.3-70b-versatile"
+LLM_MODEL = "llama-3.1-8b-instant"
 N_RESULTS = 4
 
 SYSTEM_PROMPT = (
