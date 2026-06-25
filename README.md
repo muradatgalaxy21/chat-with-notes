@@ -36,10 +36,13 @@ pip install -r requirements.txt
 ```
 
 ### 5. Environment Variables
-Copy `.env.example` to `.env` and fill in your Groq API key:
+To use the LLM features, you'll need to obtain your own Groq API key.
+Copy `.env.example` to `.env` and fill in your API key:
 ```bash
 cp .env.example .env
 ```
+*(Note: When deploying online, e.g. on Vercel/Streamlit Cloud, you would set this as an environment variable instead of using a `.env` file).*
+
 
 ## Usage
 
