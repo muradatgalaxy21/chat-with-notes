@@ -1,0 +1,18 @@
+# Virtual environment
+chat-with-notes/
+venv/
+.venv/
+env/
+
+# Environment variables
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Local databases / Vector stores
+chroma_db/
