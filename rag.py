@@ -74,6 +74,10 @@ def answer(question, n_results=N_RESULTS):
     )
     text = response.choices[0].message.content.strip()
 
+    # No sources when the model couldn't answer from the notes.
+    if text.startswith("I couldn't find that in your notes"):
+        return text, []
+
     # Dedupe sources, keep order.
     seen, sources = set(), []
     for meta in metas:

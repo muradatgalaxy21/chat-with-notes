@@ -1,6 +1,13 @@
 # Chat with Notes
 
-An ingestion and retrieval pipeline for "Chat With Your Notes" using a local vector store (ChromaDB), local embeddings (SentenceTransformers), and LLM integration.
+Ask questions about your study PDFs and get answers grounded **only** in your notes, with the source page cited. Built on a local vector store (ChromaDB), local embeddings (SentenceTransformers), and a Groq-hosted LLM.
+
+> _Add a screenshot of the running app here — recruiters check this._
+
+## How it works
+1. **Ingest** — PDFs are split into overlapping ~500-word chunks, embedded locally, and stored in ChromaDB with `{source_file, page_number}` metadata.
+2. **Retrieve** — your question is embedded and matched against the top chunks.
+3. **Answer** — a Groq LLM answers using only those chunks, or replies *"I couldn't find that in your notes."* — then cites the source pages.
 
 ## Setup Instructions
 
@@ -35,14 +42,22 @@ cp .env.example .env
 
 ## Usage
 
-### Ingesting PDF Notes
-Place your PDF notes into the `notes/` directory, then run:
+### Run the web app (recommended)
+```bash
+streamlit run app.py
+```
+Upload PDFs in the browser → click **Process** → ask questions → get answers with source pages.
+
+### Command line
+Ingest PDFs from the `notes/` directory:
 ```bash
 python ingest.py --notes-dir notes
 ```
-
-### Querying Notes
-To run a query:
+Inspect top retrieved chunks for a question:
 ```bash
 python ingest.py --notes-dir notes --query "your question here"
+```
+Get a full LLM answer with sources:
+```bash
+python rag.py "your question here"
 ```
