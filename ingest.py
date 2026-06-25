@@ -16,6 +16,8 @@ Usage:
 
 import argparse
 import os
+import re
+import sys
 import glob
 
 from pypdf import PdfReader
@@ -29,6 +31,20 @@ CHUNK_OVERLAP = 50     # words shared between consecutive chunks
 DB_DIR = "chroma_db"   # persistent vector store location
 COLLECTION_NAME = "notes"
 EMBED_MODEL = "all-MiniLM-L6-v2"  # local, free, fast
+
+
+# --- Dedup helper -----------------------------------------------------------
+
+def normalize_chunk(text):
+    """Key for detecting near-identical chunks across pages.
+
+    Slide decks repeat the same outline/agenda slide on many pages; the only
+    difference is the leading page number. Strip a leading number and collapse
+    whitespace so those repeats map to one key and can be dropped — otherwise
+    6+ identical outline chunks crowd real content out of the top results.
+    """
+    stripped = re.sub(r"^\s*\d+\s*", "", text)
+    return re.sub(r"\s+", " ", stripped).strip().lower()
 
 
 # --- PDF loading ------------------------------------------------------------
@@ -101,11 +117,18 @@ def ingest(notes_dir, reset=False):
     collection = get_collection(reset=reset)
 
     ids, documents, metadatas = [], [], []
+    seen_chunks = set()  # normalized text -> drop repeated boilerplate slides
+    skipped = 0
     for pdf_path in pdf_paths:
         source_file = os.path.basename(pdf_path)
         print(f"Reading {source_file} ...")
         for page_number, page_text in load_pdf_pages(pdf_path):
             for ci, chunk in enumerate(chunk_text(page_text)):
+                key = normalize_chunk(chunk)
+                if not key or key in seen_chunks:
+                    skipped += 1
+                    continue
+                seen_chunks.add(key)
                 ids.append(f"{source_file}-p{page_number}-c{ci}")
                 documents.append(chunk)
                 metadatas.append(
@@ -118,12 +141,13 @@ def ingest(notes_dir, reset=False):
 
     # Upsert so re-running on the same files updates instead of duplicating.
     collection.upsert(ids=ids, documents=documents, metadatas=metadatas)
-    print(f"Ingested {len(documents)} chunks from {len(pdf_paths)} PDF(s).")
+    print(f"Ingested {len(documents)} chunks from {len(pdf_paths)} PDF(s) "
+          f"({skipped} duplicate/empty chunks skipped).")
 
 
 # --- Test query (Session 1 done check) --------------------------------------
 
-def query(question, n_results=4):
+def query(question, n_results=8):
     """Print the top matching chunks with their source file + page."""
     collection = get_collection()
     results = collection.query(query_texts=[question], n_results=n_results)
@@ -144,6 +168,13 @@ def query(question, n_results=4):
 # --- CLI --------------------------------------------------------------------
 
 def main():
+    # PDFs often carry symbol-font glyphs that crash the default Windows
+    # cp1252 console. Force UTF-8 and replace anything unencodable.
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except AttributeError:
+        pass
+
     parser = argparse.ArgumentParser(description="Ingest PDFs into ChromaDB.")
     parser.add_argument("--notes-dir", default="notes",
                         help="Folder containing PDF files (default: notes)")

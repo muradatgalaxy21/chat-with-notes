@@ -16,3 +16,6 @@ __pycache__/
 
 # Local databases / Vector stores
 chroma_db/
+
+# Private task tracker (local only)
+TASKS.md

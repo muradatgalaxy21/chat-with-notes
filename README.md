@@ -1,8 +1,9 @@
-# Chat with Notes
+# Chat with Notes - v1
 
 Ask questions about your study PDFs and get answers grounded **only** in your notes, with the source page cited. Built on a local vector store (ChromaDB), local embeddings (SentenceTransformers), and a Groq-hosted LLM.
 
-> _Add a screenshot of the running app here — recruiters check this._
+![App Screenshot](assets/chat-with-notes-project-v1-image.png)
+
 
 ## How it works
 1. **Ingest** — PDFs are split into overlapping ~500-word chunks, embedded locally, and stored in ChromaDB with `{source_file, page_number}` metadata.

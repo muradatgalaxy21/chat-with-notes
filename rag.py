@@ -24,12 +24,15 @@ load_dotenv()
 
 # Current, fast, free-tier Groq model. Swap if Groq retires it.
 LLM_MODEL = "llama-3.1-8b-instant"
-N_RESULTS = 4
+N_RESULTS = 8
 
 SYSTEM_PROMPT = (
     "You are a study assistant. Answer the question using ONLY the context "
-    "provided below. If the answer is not in the context, say exactly: "
-    "\"I couldn't find that in your notes.\" Do not use outside knowledge. "
+    "provided below. The context is a set of excerpts from the user's notes; "
+    "read ALL of it before deciding. If any excerpt answers the question, "
+    "answer from it. Only if NONE of the excerpts contain the answer, reply "
+    "with exactly: \"I couldn't find that in your notes.\" Never guess from "
+    "slide titles or headings alone, and never use outside knowledge. "
     "Be concise."
 )
 
@@ -92,6 +95,13 @@ def answer(question, n_results=N_RESULTS):
 # --- CLI --------------------------------------------------------------------
 
 def main():
+    # PDF-derived text carries symbol-font glyphs that crash the default
+    # Windows cp1252 console. Force UTF-8 and replace anything unencodable.
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except AttributeError:
+        pass
+
     if len(sys.argv) < 2:
         print('Usage: python rag.py "your question"')
         sys.exit(1)
