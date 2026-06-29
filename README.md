@@ -41,7 +41,7 @@ Copy `.env.example` to `.env` and fill in your API key:
 ```bash
 cp .env.example .env
 ```
-*(Note: When deploying online, e.g. on Vercel/Streamlit Cloud, you would set this as an environment variable instead of using a `.env` file).*
+*(Note: When deploying online, e.g. on Streamlit Cloud, you would set this as an environment secret instead of using a `.env` file).*
 
 
 ## Usage
